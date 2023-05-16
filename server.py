@@ -1,19 +1,24 @@
+from flask import Flask, request, jsonify
 import os
-import http.server
-import socketserver
 
-from http import HTTPStatus
+app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "Python is running on Qoddi!"
 
-class Handler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(HTTPStatus.OK)
-        self.end_headers()
-        msg = 'Python is running on Qoddi! You requested %s' % (self.path)
-        self.wfile.write(msg.encode())
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
 
+    # Preprocess the data and make your prediction
+    # ...
+    prediction = 0
 
-port = int(os.getenv('PORT', 8080))
-print('Listening on port %s' % (port))
-httpd = socketserver.TCPServer(('', port), Handler)
-httpd.serve_forever()
+    return jsonify({
+        'prediction': prediction
+    })
+
+if __name__ == "__main__":
+    port = int(os.getenv('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
