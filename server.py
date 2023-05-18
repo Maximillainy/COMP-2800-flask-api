@@ -30,6 +30,39 @@ imputer = joblib.load(imputer_filename)
 app = Flask(__name__)
 
 
+def preprocess_input(data):
+    """
+    Preprocesses the input data by encoding the categorical data and imputing the missing values
+    :param data: The data to be processed
+    :return: The processed data
+    """
+
+    data['manufacturer'] = manufacturer_encoder.transform(data['manufacturer'].astype(str))
+    data['model'] = model_encoder.transform(data['model'].astype(str))
+    data['condition'] = condition_encoder.transform(data['condition'].astype(str))
+    data['title_status'] = title_status_encoder.transform(data['title_status'].astype(str))
+    data['paint_color'] = paint_color_encoder.transform(data['paint_color'].astype(str))
+
+    data_i = imputer.fit_transform(data)
+    data = pd.DataFrame(data_i, columns=data.columns)
+    return data
+
+
+def predict_price(input_string):
+    """
+    Uses the model to predict the price of a car
+    :param model_filename: The filename of the model
+    :param input_string: The input string containing the data to predict the price of a car
+    :return: The predicted price of the car
+    """
+    input_data = pd.DataFrame([input_string.split(",")],
+                              columns=['year', 'manufacturer', 'model', 'condition', 'odometer', 'title_status',
+                                       'paint_color', 'year_listed', 'month'])
+    input_data = preprocess_input(input_data)
+    predicted_price = price_model.predict(input_data)
+    return predicted_price
+
+
 @app.route('/')
 def home():
     return "Python is running!"
@@ -38,23 +71,10 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
+    print(data)
     input_string = data['input']
 
-    # Preprocess the data
-    input_data = pd.DataFrame([input_string.split(",")],
-                              columns=['year', 'manufacturer', 'model', 'condition', 'odometer', 'title_status',
-                                       'paint_color', 'year_listed', 'month'])
-
-    input_data['manufacturer'] = manufacturer_encoder.transform(input_data['manufacturer'].astype(str))
-    input_data['model'] = model_encoder.transform(input_data['model'].astype(str))
-    input_data['condition'] = condition_encoder.transform(input_data['condition'].astype(str))
-    input_data['title_status'] = title_status_encoder.transform(input_data['title_status'].astype(str))
-    input_data['paint_color'] = paint_color_encoder.transform(input_data['paint_color'].astype(str))
-
-    data_i = imputer.transform(input_data)
-    input_data = pd.DataFrame(data_i, columns=input_data.columns)
-
-    prediction = price_model.predict(input_data)
+    prediction = predict_price(input_string)
 
     return jsonify({
         'prediction': prediction[0]
