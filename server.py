@@ -2,14 +2,30 @@ from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
 import os
+from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
 
-price_model = joblib.load("./models/price_prediction.joblib")
-manufacturer_encoder = joblib.load('./models/encoders/manufacturer_encoder.joblib')
-model_encoder = joblib.load('./models/encoders/model_encoder.joblib')
-condition_encoder = joblib.load('./models/encoders/condition_encoder.joblib')
-title_status_encoder = joblib.load('./models/encoders/title_status_encoder.joblib')
-paint_color_encoder = joblib.load('./models/encoders/paint_color_encoder.joblib')
-imputer = joblib.load('./models/imputers/price_imputer.joblib')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_filename = os.path.join(script_dir, "models/price_prediction.joblib")
+price_model = joblib.load(model_filename)
+
+manufacturer_filename = os.path.join(script_dir, "models/encoders/manufacturer_encoder.joblib")
+manufacturer_encoder = joblib.load(manufacturer_filename)
+
+model_filename = os.path.join(script_dir, "models/encoders/model_encoder.joblib")
+model_encoder = joblib.load(model_filename)
+
+condition_filename = os.path.join(script_dir, "models/encoders/condition_encoder.joblib")
+condition_encoder = joblib.load(condition_filename)
+
+title_status_filename = os.path.join(script_dir, "models/encoders/title_status_encoder.joblib")
+title_status_encoder = joblib.load(title_status_filename)
+
+paint_color_filename = os.path.join(script_dir, "models/encoders/paint_color_encoder.joblib")
+paint_color_encoder = joblib.load(paint_color_filename)
+
+imputer_filename = os.path.join(script_dir, "models/imputers/price_imputer.joblib")
+imputer = joblib.load(imputer_filename)
 
 app = Flask(__name__)
 
