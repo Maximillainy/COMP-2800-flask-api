@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import difflib
 import joblib
+import json
 import pandas as pd
 import os
 from sklearn.preprocessing import LabelEncoder
@@ -41,12 +42,17 @@ def preprocess_input(data):
     :param data: The data to be processed
     :return: The processed data
     """
+    print(data)
     for column in data.columns:
+        # print(column)
         if column in valid_inputs:
-            data[column] = data[column].apply(
-                lambda x: difflib.get_close_matches(x, valid_inputs[column], n=1)[0]
-                if not difflib.get_close_matches(x, valid_inputs[column], cutoff=0.5) else x)
+            # print(data[column][0])
+            # print(difflib.get_close_matches(data[column][0], valid_inputs[column], n=1))
+            # data[column][0] = difflib.get_close_matches(data[column][0], valid_inputs[column], n=1)[0]
+            close_match = difflib.get_close_matches(data[column][0], valid_inputs[column], n=1)
+            data[column][0] = close_match[0] if close_match else float('NaN')
 
+    print(data)
     data['manufacturer'] = manufacturer_encoder.transform(data['manufacturer'].astype(str))
     data['model'] = model_encoder.transform(data['model'].astype(str))
     data['condition'] = condition_encoder.transform(data['condition'].astype(str))
