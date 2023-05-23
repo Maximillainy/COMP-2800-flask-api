@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import difflib
 import joblib
 import pandas as pd
 import os
@@ -27,6 +28,10 @@ paint_color_encoder = joblib.load(paint_color_filename)
 imputer_filename = os.path.join(script_dir, "models/imputers/price_imputer.joblib")
 imputer = joblib.load(imputer_filename)
 
+valid_inputs_filename = os.path.join(script_dir, "valid_inputs.json")
+with open(valid_inputs_filename, 'r') as f:
+    valid_inputs = json.load(f)
+
 app = Flask(__name__)
 
 
@@ -36,6 +41,11 @@ def preprocess_input(data):
     :param data: The data to be processed
     :return: The processed data
     """
+    for column in data.columns:
+        if column in valid_inputs:
+            data[column] = data[column].apply(
+                lambda x: difflib.get_close_matches(x, valid_inputs[column], n=1)[0]
+                if not difflib.get_close_matches(x, valid_inputs[column], cutoff=0.5) else x)
 
     data['manufacturer'] = manufacturer_encoder.transform(data['manufacturer'].astype(str))
     data['model'] = model_encoder.transform(data['model'].astype(str))
