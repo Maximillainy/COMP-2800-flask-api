@@ -54,7 +54,7 @@ def preprocess_input(data):
 
     # Convert year and odometer to numeric values
     data['year'] = pd.to_numeric(data['year'], errors='coerce')
-    data['odometer'] = pd.to_numeric(data['odometer'], errors='coerce')
+    data['odometer'] = data['odometer'].str.replace('[^0-9]', '', regex=True).astype(float)
 
     print(data)
     data['manufacturer'] = manufacturer_encoder.transform(data['manufacturer'].astype(str))
